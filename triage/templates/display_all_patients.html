@@ -1,0 +1,28 @@
+{% extends 'base.html'%}
+
+{%block content%}
+
+
+<h3> this is display_all_patients.html</h3>
+
+<body>
+    <div>
+        <form method="get">
+            {{ filter.form.as_p }}
+            <button type="submit">جستجو</button>
+        </form>
+    </div>
+
+    <h1>Patients</h1>
+  <ul>
+        {%for triage in patients_filter.qs%}
+
+            <a href="{% url 'show_triage' triage.pk %}"> {{triage.last_name}} - {{triage.first_name}} </a><br>
+
+        {% endfor %}
+
+    </ul>
+
+
+
+{% endblock %}

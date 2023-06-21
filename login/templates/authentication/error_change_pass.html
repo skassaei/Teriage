@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content%}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    خطا در تغییر پسورد
+لطفا دوباره تلاش کنید
+<a href="{% url 'changePassword' %}">تغییر</a>
+</body>
+</html>
+{% endblock %}

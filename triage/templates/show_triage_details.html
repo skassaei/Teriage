@@ -1,0 +1,26 @@
+<!--this is the old triage detail page-->
+
+
+{% extends 'base.html'%}
+
+{%block content%}
+
+<h1>{{triage}}</h1>
+<div>
+    {{triage.first_name}} <br/>
+    {{triage.last_name}}<br/>
+    {{triage.admintion_date}}<br/>
+    {{triage.age}}<br/>
+    {{triage.gender}}<br/>
+    {{triage.transportion}}<br/>
+    {{triage.other}}<br/>
+    {{triage.visit_last24hour}}<br/>
+    {{triage.pationt_main_complaint}}<br/>
+    {{triage.Alergics}}<br/>
+
+</div>
+
+
+
+
+{% endblock %}

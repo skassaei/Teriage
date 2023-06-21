@@ -1,0 +1,286 @@
+Index: triage/templates/base.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\r\n<html dir=\"rtl\" lang=\"fa\">\r\n    <head>\r\n        <title>My Project</title>\r\n        {% load static %}\r\n        <link rel=\"stylesheet\" href=\"{% static 'styles.css' %}\">\r\n        <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css\" integrity=\"sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==\" crossorigin=\"anonymous\" />\r\n        <meta charset=\"utf-8\">\r\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n\r\n    <!--Bootstrap CSS-->\r\n        <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.1/css/bootstrap.min.css\" >\r\n\r\n    </head>\r\n\r\n    <body>\r\n<!-- navbar navbar-expand-sm navbar-light bg-dark-->\r\n    <nav class=\"navbar navbar-expand-sm \" style=\"padding-left:10px; background-color:#fc039d;\">\r\n      <a class=\"navbar-brand\" href=\"{% url 'index' %}\">صفحه اصلی</a>\r\n      <button class=\"navbar-toggler\" type=\"button\" data-bs-toggle=\"collapse\" data-target=\"#navbarText\" aria-controls=\"navbarText\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">\r\n        <span class=\"navbar-toggler-icon\"></span>\r\n      </button>\r\n      <div class=\"collapse navbar-collapse\" id=\"navbarText\">\r\n        <ul class=\"navbar-nav mr-auto\">\r\n\r\n          <li class=\"nav-item mx-2\">\r\n            <a class=\"nav-link\" href=\"{% url 'display' %}\">مشاهده</a>\r\n          </li>\r\n          {% if user.groups.all.0.name == \"stations\" %}\r\n          <li class=\"nav-item mx-2\">\r\n            <a class=\"nav-link\" href=\"{% url 'upload' %}\">ثبت فرم جدید</a>\r\n          </li>\r\n          {% endif %}\r\n\r\n          <li class=\"nav-item mx-2\">\r\n            <a class=\"nav-link\" href=\"{% url 'logout' %}\">خروج</a>\r\n          </li>\r\n\r\n          <li class=\"nav-item mx-2\">\r\n            <a class=\"nav-link\" href=\"{% url 'change_password' %}\">تغییر رمز</a>\r\n          </li>\r\n\r\n        </ul>\r\n      </div>\r\n    </nav>\r\n    <div class=\"center-div\"  >\r\n        {% block content %}{% endblock content %}\r\n    </div>\r\n\r\n\r\n    </body>\r\n</html>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/triage/templates/base.html b/triage/templates/base.html
+--- a/triage/templates/base.html	(revision 28b9863f6601ea2be26a5614051924e1a57601b5)
++++ b/triage/templates/base.html	(date 1676903762252)
+@@ -36,10 +36,11 @@
+             <a class="nav-link" href="{% url 'logout' %}">خروج</a>
+           </li>
+ 
++          {% if user.groups.all.0.name != "stations" %}
+           <li class="nav-item mx-2">
+             <a class="nav-link" href="{% url 'change_password' %}">تغییر رمز</a>
+           </li>
+-
++          {% endif %}
+         </ul>
+       </div>
+     </nav>
+Index: triage/views.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from django.shortcuts import render\r\nfrom .form import TriageTestForm\r\nfrom .models import Triage\r\nfrom django.contrib.auth.decorators import login_required\r\nfrom django.contrib.auth.decorators import user_passes_test\r\nfrom django.shortcuts import get_object_or_404\r\n# Create your views here.\r\n\r\n\r\n#checks if user is a station\r\ndef station_check(user):\r\n    return user.groups.filter(name__in=['stations']).exists()\r\n\r\n@login_required()\r\ndef home_view(request):\r\n    return render(request, \"index.html\", {})\r\n\r\n@login_required()\r\n@user_passes_test(station_check,login_url=\"index\")\r\ndef upload(request):\r\n    context = {'isStation':True}\r\n\r\n    # create object of form\r\n    form = TriageTestForm(request.POST or None, request.FILES or None)\r\n\r\n    # check if form data is valid\r\n    if form.is_valid():\r\n        # save the form data to model\r\n        form.save()\r\n\r\n    context['form'] = form\r\n    return render(request, \"triage.html\", context)\r\n\r\n@login_required()\r\ndef display_triage(request):\r\n    display_triage_list = Triage.objects.all()\r\n    return render(request, \"display.html\",{'display_triage_list':display_triage_list})\r\n\r\n@login_required()\r\ndef triage_details(request,pk):\r\n    triage = get_object_or_404(Triage, id=pk)\r\n\r\n    print(triage)\r\n    return render(request, 'show.html', {'triage': triage})
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/triage/views.py b/triage/views.py
+--- a/triage/views.py	(revision 28b9863f6601ea2be26a5614051924e1a57601b5)
++++ b/triage/views.py	(date 1676904239299)
+@@ -11,6 +11,8 @@
+ def station_check(user):
+     return user.groups.filter(name__in=['stations']).exists()
+ 
++#checks if user is not a station
++
+ @login_required()
+ def home_view(request):
+     return render(request, "index.html", {})
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"33134ab6-2005-46bd-9d1e-a387a6f987fa\" name=\"Changes\" comment=\"commit to merge master into cleanup\">\r\n      <change afterPath=\"$PROJECT_DIR$/login/static/login/styles.css\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/db.sqlite3\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/db.sqlite3\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/hospital/settings.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/hospital/settings.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/login/forms.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/login/forms.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/login/templates/authentication/login.html\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/login/templates/authentication/login.html\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"Python Script\" />\r\n        <option value=\"HTML File\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\r\n      <map>\r\n        <entry key=\"$PROJECT_DIR$\" value=\"master\" />\r\n      </map>\r\n    </option>\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"GitSEFilterConfiguration\">\r\n    <file-type-list>\r\n      <filtered-out-file-type name=\"LOCAL_BRANCH\" />\r\n      <filtered-out-file-type name=\"REMOTE_BRANCH\" />\r\n      <filtered-out-file-type name=\"TAG\" />\r\n      <filtered-out-file-type name=\"COMMIT_BY_MESSAGE\" />\r\n    </file-type-list>\r\n  </component>\r\n  <component name=\"MarkdownSettingsMigration\">\r\n    <option name=\"stateVersion\" value=\"1\" />\r\n  </component>\r\n  <component name=\"ProjectId\" id=\"2L352UpcUYiiDHMGvCA0tACkyxk\" />\r\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\">\r\n    <property name=\"DefaultHtmlFileTemplate\" value=\"HTML File\" />\r\n    <property name=\"RunOnceActivity.OpenProjectViewOnStart\" value=\"true\" />\r\n    <property name=\"RunOnceActivity.ShowReadmeOnStart\" value=\"true\" />\r\n    <property name=\"last_opened_file_path\" value=\"$PROJECT_DIR$\" />\r\n    <property name=\"settings.editor.selected.configurable\" value=\"com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable\" />\r\n  </component>\r\n  <component name=\"RunManager\">\r\n    <configuration name=\"PythonHospital\" type=\"PythonConfigurationType\" factoryName=\"Python\">\r\n      <module name=\"hospital\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <envs>\r\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\r\n      </envs>\r\n      <option name=\"SDK_HOME\" value=\"C:\\Users\\sinap\\AppData\\Local\\Programs\\Python\\Python39\\python.exe\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/..\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"false\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"SCRIPT_NAME\" value=\"$PROJECT_DIR$\" />\r\n      <option name=\"PARAMETERS\" value=\"\" />\r\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\r\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\r\n      <option name=\"MODULE_MODE\" value=\"false\" />\r\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\r\n      <option name=\"INPUT_FILE\" value=\"\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"33134ab6-2005-46bd-9d1e-a387a6f987fa\" name=\"Changes\" comment=\"\" />\r\n      <created>1675086719454</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1675086719454</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00001\" summary=\"testing branch login\">\r\n      <created>1675696364835</created>\r\n      <option name=\"number\" value=\"00001\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1675696364835</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00002\" summary=\"testing branch login X2\">\r\n      <created>1675696411040</created>\r\n      <option name=\"number\" value=\"00002\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1675696411040</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00003\" summary=\"login capablity created\">\r\n      <created>1675702774677</created>\r\n      <option name=\"number\" value=\"00003\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00003\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1675702774677</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00004\" summary=\"different views created for different users\">\r\n      <created>1675721608236</created>\r\n      <option name=\"number\" value=\"00004\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00004\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1675721608236</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00005\" summary=\"different views created for different users\">\r\n      <created>1675782529970</created>\r\n      <option name=\"number\" value=\"00005\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00005\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1675782529970</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00006\" summary=\"logout functionality added\">\r\n      <created>1675827243594</created>\r\n      <option name=\"number\" value=\"00006\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00006\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1675827243594</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00007\" summary=\"navbar added\">\r\n      <created>1675827719428</created>\r\n      <option name=\"number\" value=\"00007\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00007\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1675827719428</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00008\" summary=\"small correction made to display\">\r\n      <created>1675892495040</created>\r\n      <option name=\"number\" value=\"00008\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00008\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1675892495040</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00009\" summary=\"authentication restructures; decorators used to limit access to users\">\r\n      <created>1675896104454</created>\r\n      <option name=\"number\" value=\"00009\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00009\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1675896104454</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00010\" summary=\"Password Reset Added\">\r\n      <created>1675898080124</created>\r\n      <option name=\"number\" value=\"00010\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00010\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1675898080124</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00011\" summary=\"paths fixed\">\r\n      <created>1675956560041</created>\r\n      <option name=\"number\" value=\"00011\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00011\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1675956560041</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00012\" summary=\"m\">\r\n      <created>1675956713057</created>\r\n      <option name=\"number\" value=\"00012\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00012\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1675956713057</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00013\" summary=\"m\">\r\n      <created>1675957161526</created>\r\n      <option name=\"number\" value=\"00013\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00013\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1675957161526</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00014\" summary=\"m\">\r\n      <created>1676048437741</created>\r\n      <option name=\"number\" value=\"00014\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00014\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1676048437741</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00015\" summary=\"login styling\">\r\n      <created>1676079641145</created>\r\n      <option name=\"number\" value=\"00015\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00015\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1676079641145</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00016\" summary=\"commit to merge master into cleanup\">\r\n      <created>1676902500151</created>\r\n      <option name=\"number\" value=\"00016\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00016\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1676902500151</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"17\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State />\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n  </component>\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <MESSAGE value=\"testing branch login\" />\r\n    <MESSAGE value=\"testing branch login X2\" />\r\n    <MESSAGE value=\"login capablity created\" />\r\n    <MESSAGE value=\"different views created for different users\" />\r\n    <MESSAGE value=\"logout functionality added\" />\r\n    <MESSAGE value=\"navbar added\" />\r\n    <MESSAGE value=\"small correction made to display\" />\r\n    <MESSAGE value=\"authentication restructures; decorators used to limit access to users\" />\r\n    <MESSAGE value=\"Password Reset Added\" />\r\n    <MESSAGE value=\"paths fixed\" />\r\n    <MESSAGE value=\"m\" />\r\n    <MESSAGE value=\"login styling\" />\r\n    <MESSAGE value=\"commit to merge master into cleanup\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"commit to merge master into cleanup\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 28b9863f6601ea2be26a5614051924e1a57601b5)
++++ b/.idea/workspace.xml	(date 1676903918264)
+@@ -1,203 +1,26 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="ChangeListManager">
+-    <list default="true" id="33134ab6-2005-46bd-9d1e-a387a6f987fa" name="Changes" comment="commit to merge master into cleanup">
+-      <change afterPath="$PROJECT_DIR$/login/static/login/styles.css" afterDir="false" />
++    <list default="true" id="55d1020c-93bb-4b5e-b6db-e077ecce8777" name="Changes" comment="">
++      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2023-02-09_10_32_a_m___Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2023-02-09_10_32_a_m___Changes_.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2023-02-09_10_31_a_m___Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2023-02-09_10_31_a_m___Changes_.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2023-02-09_10_37_a_m___Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2023-02-09_10_37_a_m___Changes_.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2023-02-09_10_38_a_m___Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2023-02-09_10_38_a_m___Changes_.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/hospital/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/hospital/settings.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/login/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/login/forms.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/login/templates/authentication/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/login/templates/authentication/login.html" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/triage/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/triage/templates/base.html" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/triage/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/triage/views.py" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+     <option name="LAST_RESOLUTION" value="IGNORE" />
+-  </component>
+-  <component name="FileTemplateManagerImpl">
+-    <option name="RECENT_TEMPLATES">
+-      <list>
+-        <option value="Python Script" />
+-        <option value="HTML File" />
+-      </list>
+-    </option>
+   </component>
+   <component name="Git.Settings">
+-    <option name="RECENT_BRANCH_BY_REPOSITORY">
+-      <map>
+-        <entry key="$PROJECT_DIR$" value="master" />
+-      </map>
+-    </option>
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+   </component>
+-  <component name="GitSEFilterConfiguration">
+-    <file-type-list>
+-      <filtered-out-file-type name="LOCAL_BRANCH" />
+-      <filtered-out-file-type name="REMOTE_BRANCH" />
+-      <filtered-out-file-type name="TAG" />
+-      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+-    </file-type-list>
+-  </component>
+-  <component name="MarkdownSettingsMigration">
+-    <option name="stateVersion" value="1" />
+-  </component>
+-  <component name="ProjectId" id="2L352UpcUYiiDHMGvCA0tACkyxk" />
+   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+-  <component name="ProjectViewState">
+-    <option name="hideEmptyMiddlePackages" value="true" />
+-    <option name="showLibraryContents" value="true" />
+-  </component>
+-  <component name="PropertiesComponent">
+-    <property name="DefaultHtmlFileTemplate" value="HTML File" />
+-    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+-  </component>
+-  <component name="RunManager">
+-    <configuration name="PythonHospital" type="PythonConfigurationType" factoryName="Python">
+-      <module name="hospital" />
+-      <option name="INTERPRETER_OPTIONS" value="" />
+-      <option name="PARENT_ENVS" value="true" />
+-      <envs>
+-        <env name="PYTHONUNBUFFERED" value="1" />
+-      </envs>
+-      <option name="SDK_HOME" value="C:\Users\sinap\AppData\Local\Programs\Python\Python39\python.exe" />
+-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/.." />
+-      <option name="IS_MODULE_SDK" value="false" />
+-      <option name="ADD_CONTENT_ROOTS" value="true" />
+-      <option name="ADD_SOURCE_ROOTS" value="true" />
+-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$" />
+-      <option name="PARAMETERS" value="" />
+-      <option name="SHOW_COMMAND_LINE" value="false" />
+-      <option name="EMULATE_TERMINAL" value="false" />
+-      <option name="MODULE_MODE" value="false" />
+-      <option name="REDIRECT_INPUT" value="false" />
+-      <option name="INPUT_FILE" value="" />
+-      <method v="2" />
+-    </configuration>
+-  </component>
+-  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+   <component name="TaskManager">
+-    <task active="true" id="Default" summary="Default task">
+-      <changelist id="33134ab6-2005-46bd-9d1e-a387a6f987fa" name="Changes" comment="" />
+-      <created>1675086719454</created>
+-      <option name="number" value="Default" />
+-      <option name="presentableId" value="Default" />
+-      <updated>1675086719454</updated>
+-    </task>
+-    <task id="LOCAL-00001" summary="testing branch login">
+-      <created>1675696364835</created>
+-      <option name="number" value="00001" />
+-      <option name="presentableId" value="LOCAL-00001" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1675696364835</updated>
+-    </task>
+-    <task id="LOCAL-00002" summary="testing branch login X2">
+-      <created>1675696411040</created>
+-      <option name="number" value="00002" />
+-      <option name="presentableId" value="LOCAL-00002" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1675696411040</updated>
+-    </task>
+-    <task id="LOCAL-00003" summary="login capablity created">
+-      <created>1675702774677</created>
+-      <option name="number" value="00003" />
+-      <option name="presentableId" value="LOCAL-00003" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1675702774677</updated>
+-    </task>
+-    <task id="LOCAL-00004" summary="different views created for different users">
+-      <created>1675721608236</created>
+-      <option name="number" value="00004" />
+-      <option name="presentableId" value="LOCAL-00004" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1675721608236</updated>
+-    </task>
+-    <task id="LOCAL-00005" summary="different views created for different users">
+-      <created>1675782529970</created>
+-      <option name="number" value="00005" />
+-      <option name="presentableId" value="LOCAL-00005" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1675782529970</updated>
+-    </task>
+-    <task id="LOCAL-00006" summary="logout functionality added">
+-      <created>1675827243594</created>
+-      <option name="number" value="00006" />
+-      <option name="presentableId" value="LOCAL-00006" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1675827243594</updated>
+-    </task>
+-    <task id="LOCAL-00007" summary="navbar added">
+-      <created>1675827719428</created>
+-      <option name="number" value="00007" />
+-      <option name="presentableId" value="LOCAL-00007" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1675827719428</updated>
+-    </task>
+-    <task id="LOCAL-00008" summary="small correction made to display">
+-      <created>1675892495040</created>
+-      <option name="number" value="00008" />
+-      <option name="presentableId" value="LOCAL-00008" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1675892495040</updated>
+-    </task>
+-    <task id="LOCAL-00009" summary="authentication restructures; decorators used to limit access to users">
+-      <created>1675896104454</created>
+-      <option name="number" value="00009" />
+-      <option name="presentableId" value="LOCAL-00009" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1675896104454</updated>
+-    </task>
+-    <task id="LOCAL-00010" summary="Password Reset Added">
+-      <created>1675898080124</created>
+-      <option name="number" value="00010" />
+-      <option name="presentableId" value="LOCAL-00010" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1675898080124</updated>
+-    </task>
+-    <task id="LOCAL-00011" summary="paths fixed">
+-      <created>1675956560041</created>
+-      <option name="number" value="00011" />
+-      <option name="presentableId" value="LOCAL-00011" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1675956560041</updated>
+-    </task>
+-    <task id="LOCAL-00012" summary="m">
+-      <created>1675956713057</created>
+-      <option name="number" value="00012" />
+-      <option name="presentableId" value="LOCAL-00012" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1675956713057</updated>
+-    </task>
+-    <task id="LOCAL-00013" summary="m">
+-      <created>1675957161526</created>
+-      <option name="number" value="00013" />
+-      <option name="presentableId" value="LOCAL-00013" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1675957161526</updated>
+-    </task>
+-    <task id="LOCAL-00014" summary="m">
+-      <created>1676048437741</created>
+-      <option name="number" value="00014" />
+-      <option name="presentableId" value="LOCAL-00014" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1676048437741</updated>
+-    </task>
+-    <task id="LOCAL-00015" summary="login styling">
+-      <created>1676079641145</created>
+-      <option name="number" value="00015" />
+-      <option name="presentableId" value="LOCAL-00015" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1676079641145</updated>
+-    </task>
+-    <task id="LOCAL-00016" summary="commit to merge master into cleanup">
+-      <created>1676902500151</created>
+-      <option name="number" value="00016" />
+-      <option name="presentableId" value="LOCAL-00016" />
+-      <option name="project" value="LOCAL" />
+-      <updated>1676902500151</updated>
+-    </task>
+-    <option name="localTasksCounter" value="17" />
+     <servers />
+   </component>
+   <component name="Vcs.Log.Tabs.Properties">
+@@ -211,20 +34,4 @@
+       </map>
+     </option>
+   </component>
+-  <component name="VcsManagerConfiguration">
+-    <MESSAGE value="testing branch login" />
+-    <MESSAGE value="testing branch login X2" />
+-    <MESSAGE value="login capablity created" />
+-    <MESSAGE value="different views created for different users" />
+-    <MESSAGE value="logout functionality added" />
+-    <MESSAGE value="navbar added" />
+-    <MESSAGE value="small correction made to display" />
+-    <MESSAGE value="authentication restructures; decorators used to limit access to users" />
+-    <MESSAGE value="Password Reset Added" />
+-    <MESSAGE value="paths fixed" />
+-    <MESSAGE value="m" />
+-    <MESSAGE value="login styling" />
+-    <MESSAGE value="commit to merge master into cleanup" />
+-    <option name="LAST_COMMIT_MESSAGE" value="commit to merge master into cleanup" />
+-  </component>
+ </project>
+\ No newline at end of file

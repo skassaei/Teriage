@@ -1,0 +1,27 @@
+{% extends 'base.html'%}
+
+{%block content%}
+
+
+    <h1>New patient</h1>
+    <br/><br/>
+    {% if submitted %}
+        your form was Submitted Succefully
+    {% else %}
+        <form action="" method=POST><!--we are going to post this to itself so is action ="" -->
+        
+        <!--every form needs a csrf tooken.
+        its a security tooken making it hard for hackers to hijack a form -->
+        {% csrf_token %}
+        {{ form.media }}
+        {{form.as_p}}
+
+        <input type="submit" value="submit" class="btn btn-secondary" />
+    </form>
+    {% endif %}
+
+
+
+
+
+{% endblock %}

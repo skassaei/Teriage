@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content%}
+<!--
+       {% for msg in messages%}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <strong>{{ msg }}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="close"></button>
+            </div>
+        {% endfor %}
+-->
+    <div>
+    {% if user.groups.all.0.name == "stations" %}
+        این چیزیست که station1 میبیند
+        <ul>
+        <li><a href="add_triage"> ثبت فرم جدید </a> </li>
+        <li><a href="patients_list"> مشاهده فرم ها </a></li>
+        </ul>
+    {% else %}
+        این چیزیست که افراد غیر station :میبینند
+        <ul>
+        <li><a href="patients_list">مشاهده فرم ها</a></li>
+        </ul>
+    {% endif %}
+        </div>
+    <div>
+        <h2>ایمیل: {{ user.email }} </h2>
+        {% if user.groups.all.0.name != "stations" %}
+        <h3><a href="{% url 'changeEmail' %}">تغییر نشانی ایمیل</a></h3>
+        {% endif %}
+        <h2>نام:{{ name }} </h2>
+        {% if user.groups.all.0.name != "stations" %}
+        <h3><a href="{% url 'changePassword' %}">تغییر رمز ورود</a></h3>
+        {% endif %}
+    </div>
+{% endblock %}
